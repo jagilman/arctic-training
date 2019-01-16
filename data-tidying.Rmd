@@ -1,0 +1,46 @@
+---
+title: "Data Tidying"
+author: "Jessica Ernakovich"
+date: "1/16/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Loading packages
+We need to call these packages when they are needed for a program, even though it's installed  
+It's good practice to include all your library calls in one chunk  
+
+
+
+```{r, warming = F, message = F}
+
+library(dplyr)
+library(tidyr) 
+
+```
+
+this will give a warning message about certain packages because their names are redundant to this package and others. By default, RStudio will assume you want to call the function from the most recently loaded library. 
+
+If necessary, you can call from the other package using the package_name::function_name(...)
+
+
+
+Read in the datafile
+```{r}
+catch_df <- read.csv(url("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1", method = "libcurl"),
+                    stringsAsFactors = FALSE)
+head(catch_df)
+```
+
+
+
+# Data Cleaning
+
+
+# Split-Apply-Combine
+
+
+# Joins
