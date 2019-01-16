@@ -34,8 +34,27 @@ catch_df <- read.csv(url("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df3
                     stringsAsFactors = FALSE)
 head(catch_df)
 ```
+cmd + shift + M will result in `%>%`, the pipe operator (which allows operations to be linked)
+
+* remove marginal sum and notes column
+* move from wide to long format
+
+```{r}
+
+catch_long <- catch_df %>% 
+  select(Region, Year, Chinook, Sockeye, Coho, Pink, Chum) %>% 
+  gather(key = "species", value = "catch", -Year, -Region)
+
+#including function calls on new lines makes this cleaner, but is unnecessary
+#could also have used "-" to just drop the columns we wanted to get rid of. 
+
+head(catch_long)
+
+```
+If `<-` reads as "gets" and ` %>%` reads as "then", then the first two lines above read: catch_cleaned gets the catch_df then a select of the catch_df.
 
 
+We will use gather to move data from wide format to long format (?gather)
 
 # Data Cleaning
 

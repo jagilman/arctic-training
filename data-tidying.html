@@ -210,6 +210,28 @@ head(catch_df)</code></pre>
 ## 4    SSE 1889       0     182   11   92    0 285             
 ## 5    SSE 1890       0     251   42    0    0 292             
 ## 6    SSE 1891       0     274   24    0    0 298</code></pre>
+<p>cmd + shift + M will result in <code>%&gt;%</code>, the pipe operator (which allows operations to be linked)</p>
+<ul>
+<li>remove marginal sum and notes column</li>
+<li>move from wide to long format</li>
+</ul>
+<pre class="r"><code>catch_long &lt;- catch_df %&gt;% 
+  select(Region, Year, Chinook, Sockeye, Coho, Pink, Chum) %&gt;% 
+  gather(key = &quot;species&quot;, value = &quot;catch&quot;, -Year, -Region)
+
+#including function calls on new lines makes this cleaner, but is unnecessary
+#could also have used &quot;-&quot; to just drop the columns we wanted to get rid of. 
+
+head(catch_long)</code></pre>
+<pre><code>##   Region Year species catch
+## 1    SSE 1886 Chinook     0
+## 2    SSE 1887 Chinook     0
+## 3    SSE 1888 Chinook     0
+## 4    SSE 1889 Chinook     0
+## 5    SSE 1890 Chinook     0
+## 6    SSE 1891 Chinook     0</code></pre>
+<p>If <code>&lt;-</code> reads as “gets” and <code>%&gt;%</code> reads as “then”, then the first two lines above read: catch_cleaned gets the catch_df then a select of the catch_df.</p>
+<p>We will use gather to move data from wide format to long format (?gather)</p>
 </div>
 <div id="data-cleaning" class="section level1">
 <h1>Data Cleaning</h1>
