@@ -19,13 +19,16 @@ It's good practice to include all your library calls in one chunk
 
 library(dplyr)
 library(tidyr) 
-
+library(plotrix) #julia told me about this and I didn't use it, but it can give you std err
 ```
 
 this will give a warning message about certain packages because their names are redundant to this package and others. By default, RStudio will assume you want to call the function from the most recently loaded library. 
 
 If necessary, you can call from the other package using the package_name::function_name(...)
 
+
+
+# Data Cleaning
 
 
 Read in the datafile
@@ -54,31 +57,97 @@ head(catch_long)
 If `<-` reads as "gets" and ` %>%` reads as "then", then the first two lines above read: catch_cleaned gets the catch_df then a select of the catch_df.
 
 
+* erroneious value due to OCR issue - change "I" to one
+* create "catch" column that multiplies by 1000 to get true numbers
 
 ```{r}
 catch_cleaned <- catch_long %>% 
-  rename(catch_thousands = catch) #%>% 
-  #mutate(catch = catch_thousands * 1000)
+  rename(catch_thousands = catch) %>% 
+mutate(catch_thousands = ifelse(catch_thousands == "I", 1, catch_thousands)) %>% 
+mutate(catch_thousands = as.integer(catch_thousands))  %>% 
+mutate(catch = catch_thousands *1000)
 
-head (catch_cleaned)
+tail (catch_cleaned) #tail is more meaningful than head in this case, because the head is all zero's
 ```
 
 There are some values in the catch_thousands column that are not integers, but rather text. So, we are trying to find and force to be integers. But, it didn't work. So then we looked for it with the "which" command. And then we visualized it. Next, we will change this to a number. 
-```{r}
+```{r, eval = F, echo = F}
+# I used this code to find the bad value
+# eval = F means that it won't run, echo = F means not to knit it
 test_catch <- as.integer(catch_cleaned$catch_thousands) #trying to force to be integers, but it delivers that "NAs are introduced by coercion"
 
 i <- which(is.na(test_catch) ==T) #this will return whatever value is true for this
 catch_cleaned[i, ]   #[row i, all colums] so we can find the problem
 
 
+
+```
+
+# Split-Apply-Combine
+ 
+ 
+ Calculate total catch by region
+ 
+```{r}
+catch_total <- catch_cleaned %>% 
+  group_by(species, Year) %>% 
+  summarize(catch_region = sum(catch),  
+            average = mean(catch), 
+            stderr = std.error(catch), #from plotrix package
+            n_obs = n())
+
+catch_total
+```
+ 
+ Filter for Chinook Salmon
+ 
+```{r}
+#names(catch_cleaned)
+catch_chinook <- catch_cleaned %>% 
+  filter(species == "Chinook" & Region == "SSE" & Year > 1990) %>% 
+# "|" is called a logical "or"
+  arrange(-Year)
+  
+head(catch_chinook)
+```
+ 
+
+# Joins
+
+we will be using a left join to join the region definition to the catch data
+
+
+using a left join will mean that the number of rows are defined by the left dataframe. The column numbers will be the columns from left + the column from right - the number of key columns. 
+
+```{r}
+region_defs <- read.csv(url("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.303.1", method = "libcurl"),
+                        stringsAsFactors = FALSE)
+
+head(region_defs)
+```
+
+Cleaning up a bit by keeping only the columns we want. 
+```{r}
+region_clean <- region_defs %>% 
+  select(code, mgmtArea)
+
+head(region_clean)
+
+```
+
+Now it's time for the join.
+```{r}
+catch_joined <- left_join(catch_cleaned, region_clean, #join syntax changes a bit
+                          by = c("Region" = "code")) 
+
+head(catch_joined)
 ```
 
 
 
-# Data Cleaning
 
 
-# Split-Apply-Combine
 
 
-# Joins
+
+
