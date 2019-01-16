@@ -54,7 +54,26 @@ head(catch_long)
 If `<-` reads as "gets" and ` %>%` reads as "then", then the first two lines above read: catch_cleaned gets the catch_df then a select of the catch_df.
 
 
-We will use gather to move data from wide format to long format (?gather)
+
+```{r}
+catch_cleaned <- catch_long %>% 
+  rename(catch_thousands = catch) #%>% 
+  #mutate(catch = catch_thousands * 1000)
+
+head (catch_cleaned)
+```
+
+There are some values in the catch_thousands column that are not integers, but rather text. So, we are trying to find and force to be integers. But, it didn't work. So then we looked for it with the "which" command. And then we visualized it. Next, we will change this to a number. 
+```{r}
+test_catch <- as.integer(catch_cleaned$catch_thousands) #trying to force to be integers, but it delivers that "NAs are introduced by coercion"
+
+i <- which(is.na(test_catch) ==T) #this will return whatever value is true for this
+catch_cleaned[i, ]   #[row i, all colums] so we can find the problem
+
+
+```
+
+
 
 # Data Cleaning
 
