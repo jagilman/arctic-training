@@ -96,6 +96,7 @@ esc_plot <- ggplot(annual_esc, aes(x = year, y = escapement, color = Species)) +
   geom_line() +
   geom_point() +
   facet_wrap(~SASAP.Region, scales = "free", ncol = 2) + # ~ is a formula in R that defines the independent ~ dependent variables
+  #free allowed the axes to not be consistent across all the graphs (can also have free_y,etc)
   #facet_wrap allows you to make the same type of graph for many different panels of data... the same plot
   # gridExtra function grid.arrange allows you to set up a multipanel plot, which is especially helpful if you need to make plots that are different
   my_theme
