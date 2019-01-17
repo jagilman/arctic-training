@@ -6,7 +6,7 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE) #we changed echo = F globally here so that we didn't have to show our R script
 ```
 
 ```{r, warning = F, message = F, echo = F}
@@ -14,6 +14,7 @@ library(dplyr)
 library(tidyr)
 library(ggplot2)
 library(DT) #allows us to make dynamic tables
+library(leaflet)
 ```
 
 # Data Tidying
@@ -120,4 +121,33 @@ write.csv(annual_esc, "derived_data/annual_escapement.csv",
 
 
 
+
 # Interactive Map
+
+Make a map using leaflet  
+
+Find unique locations with lat/long values
+
+```{r}
+locations <- esc %>%
+  distinct(Location, Latitude, Longitude) %>%  #distinct will pull out unique combinations of whatever values you give it
+drop_na() # will drop a row if ANY of the values are missing (even the  uniqueID, here location)
+
+datatable(locations)
+
+
+```
+
+```{r}
+leaflet(locations) %>%  #leaflet uses the pipe (unlike ggplot)
+  addTiles() %>% #adds the background map
+  addMarkers(~ Longitude, ~ Latitude, popup = ~ Location)
+
+# you can even put ggplot plots into leaflet as popups
+```
+
+
+
+
+
+
