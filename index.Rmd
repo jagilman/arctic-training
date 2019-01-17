@@ -9,3 +9,115 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+```{r, warning = F, message = F, echo = F}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+library(DT) #allows us to make dynamic tables
+```
+
+# Data Tidying
+
+Escapement data are sources from: Alaska Department of Fish and Game, Division of Commercial Fisheries. 2017. Daily salmon escapement counts from the OceanAK database, Alaska, 1921-2017. Knowledge Network for Biocomplexity. doi:10.5063/F1S46Q6M.
+
+```{r, echo = F, results = F}
+esc <- read.csv(url("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/urn%3Auuid%3Af119a05b-bbe7-4aea-93c6-85434dcb1c5e", method = "libcurl"), 
+                stringsAsFactors = F)
+
+head(esc)
+```
+
+
+Calculate annual, regional total escapement by species.
+
+* `seperate` the date into year - month - day
+* `group_by` and `summarize` to calculate the sum over unique region-year-species combinations
+* `filter` for salmon species
+
+
+
+```{r, echo = F}
+annual_esc <- esc %>% 
+  separate(sampleDate, into = c("year", "month", "day"), sep = "-") %>% 
+  mutate(year = as.numeric(year)) %>% 
+  group_by(SASAP.Region, Species, year) %>% 
+  summarise(escapement = sum(DailyCount)) %>% 
+  filter(Species %in% c("Chinook", "Sockeye", "Pink", "Chum", "Coho")) # %in% filters for any species in the list, so you don't have to do species = "Chinook" | species = "Chum" and so on)
+
+```
+
+```{r, echo = F}
+datatable(annual_esc)
+```
+
+
+# Static Plots
+
+```{r, echo = F}
+ggplot(data = annual_esc, mapping = aes(x = Species, y = escapement, fill = SASAP.Region)) + 
+  geom_col()
+
+# aes function stands for aesthetics, tells gglot which columns to pick and how to map them onto the plot
+# most people leave data and mapping arguments implicitly
+# for ggplot, you add (+) rather than pipe ( %>% )
+
+# or if you wanted blue for all columns 
+#ggplot(data = annual_esc, mapping = aes(x = Species, y = escapement)) + 
+  #geom_col(fill = "blue")
+```
+
+timeseries of Kodiak escapement by species
+
+```{r, echo = F}
+my_theme <- theme_minimal() + 
+theme(plot.title = element_text(hjust = 0.5))
+```
+
+
+```{r, echo = F}
+ggplot(data = filter(annual_esc, SASAP.Region == "Kodiak"), aes(x = year, y = escapement, 
+           color = Species)) + #color sets the outside, or lines, fill sets fill
+geom_line() + 
+geom_point() + 
+ylab("Escapement (no. fish)") + 
+xlab("Year") + 
+ggtitle("Kodiak Salmon Escapement") + 
+my_theme
+
+#can also create your own theme (e.g. theme minimal, defining text sizes, center justification, then call it at the top so you always have the same looking plot)
+```
+
+
+Plot timeseries of escapement by species for all regions
+
+```{r, echo = F, fig.height = 10, fig.width = 6}
+esc_plot <- ggplot(annual_esc, aes(x = year, y = escapement, color = Species)) +
+  geom_line() +
+  geom_point() +
+  facet_wrap(~SASAP.Region, scales = "free", ncol = 2) + # ~ is a formula in R that defines the independent ~ dependent variables
+  #facet_wrap allows you to make the same type of graph for many different panels of data... the same plot
+  # gridExtra function grid.arrange allows you to set up a multipanel plot, which is especially helpful if you need to make plots that are different
+  my_theme
+
+esc_plot
+
+ggsave("figures/region_escapement.png", 
+       plot = esc_plot, 
+       height = 10, 
+       width = 8, 
+       units = "in")
+
+```
+
+to write a datafile
+
+```{r, echo = F}
+write.csv(annual_esc, "derived_data/annual_escapement.csv", 
+          row.names = F)
+
+#if you don't want to push the csv to your GitHub respository, you can add this to your .gitignore file
+```
+
+
+
+# Interactive Map
