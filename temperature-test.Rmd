@@ -1,0 +1,23 @@
+---
+title: "Temperature test"
+author: "Jessica Ernakovich"
+date: "1/17/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Source our utility function and test them
+
+```{r}
+source("fahr_to_celcius.R") #this allows all the lines of the script you are calling to be run, so this is the way we can use our own functions
+```
+
+
+```{r}
+airtemps <- c(10,15)
+fahr_to_celsius(airtemps)
+```
+
